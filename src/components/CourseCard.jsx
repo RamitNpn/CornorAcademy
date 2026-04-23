@@ -1,9 +1,27 @@
-import React from 'react'
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-function CourseCard() {
+function CourseCard({ course }) {
+  const navigate = useNavigate();
+
   return (
-    <div>CourseCard</div>
-  )
+    <div
+      onClick={() => navigate(`/course/${course._id}`)}
+      className="border rounded-xl p-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition"
+    >
+      <img
+        src={course.thumbnail}
+        alt={course.title}
+        className="w-full h-40 object-cover rounded-lg"
+      />
+
+      <h2 className="mt-3 font-semibold">{course.title}</h2>
+
+      <p className="text-sm text-gray-500 mt-1">
+        {course.instructor}
+      </p>
+    </div>
+  );
 }
 
-export default CourseCard
+export default CourseCard;

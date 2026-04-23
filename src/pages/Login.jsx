@@ -8,27 +8,55 @@ function Login() {
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const data = await loginUser(form);
+    setError("");
 
-    if (data.token) {
-      localStorage.setItem("token", data.token);
+    if (!form.email || !form.password) {
+      setError("Please fill all fields ⚠️");
+      return;
+    }
 
-      alert("Login success 🚀");
-      navigate("/dashboard");
-    } else {
-      alert(data.message);
+    try {
+      setLoading(true);
+
+      const data = await loginUser(form);
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        alert(`Welcome back ${data.user?.name || "User"} 🚀`);
+        navigate("/dashboard");
+      } else {
+        setError(data.message || "Login failed");
+      }
+    } catch (err) {
+      setError("Server error. Try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="p-6 shadow-lg rounded-xl w-80 space-y-4">
-        <h2 className="text-xl font-bold">Login</h2>
+    <div className="h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="p-6 shadow-lg rounded-xl w-80 space-y-4 bg-white"
+      >
+        <h2 className="text-xl font-bold text-center">Login</h2>
+
+        {error && (
+          <div className="bg-red-100 text-red-600 p-2 rounded text-sm">
+            {error}
+          </div>
+        )}
 
         <input
           type="email"
@@ -44,8 +72,13 @@ function Login() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
 
-        <button className="w-full bg-black text-white py-2 rounded">
-          Login
+        <button
+          disabled={loading}
+          className={`w-full py-2 rounded text-white ${
+            loading ? "bg-gray-500" : "bg-black"
+          }`}
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
     </div>

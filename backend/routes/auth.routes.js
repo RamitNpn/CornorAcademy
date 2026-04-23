@@ -30,11 +30,12 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password: hashed,
+      role: "user",
     });
 
     res.json({
       message: "User registered",
-      user: { id: user._id, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -46,6 +47,22 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    if (
+      email === process.env.ADMIN_ID &&
+      password === process.env.ADMIN_PASS
+    ) {
+      const token = jwt.sign(
+        { id: "admin", role: "admin" },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      return res.json({
+        token,
+        user: { name: "Admin", email: process.env.ADMIN_ID, role: "admin" },
+      });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
@@ -57,14 +74,14 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id },
+      { id: user._id, role: user.role || "user" },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role || "user" },
     });
 
   } catch (err) {

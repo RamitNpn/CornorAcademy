@@ -9,7 +9,7 @@ const videoSchema = new mongoose.Schema({
 const courseSchema = new mongoose.Schema(
   {
     title: {
-      type: String,
+      type: String, 
       required: true,
     },
 
@@ -33,7 +33,7 @@ const courseSchema = new mongoose.Schema(
       default: "4 weeks",
     },
 
-    price: {
+    price: {          
       type: Number,
       default: 0,
     },

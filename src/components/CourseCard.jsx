@@ -10,7 +10,7 @@ function CourseCard({ course }) {
       className="border rounded-xl p-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition"
     >
       <img
-        src={course.thumbnail}
+        src={course.image || course.thumbnail || "/default-course.png"}
         alt={course.title}
         className="w-full h-40 object-cover rounded-lg"
       />
@@ -18,7 +18,7 @@ function CourseCard({ course }) {
       <h2 className="mt-3 font-semibold">{course.title}</h2>
 
       <p className="text-sm text-gray-500 mt-1">
-        {course.instructor}
+        {course.instructor?.name || course.instructor || "Unknown Instructor"}
       </p>
     </div>
   );

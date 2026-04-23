@@ -16,15 +16,20 @@ router.post("/", protect, adminOnly, async (req, res) => {
       return res.status(400).json({ message: "Title & description required" });
     }
 
-    const course = await Course.create({
+    const courseData = {
       title,
       description,
       level,
       duration,
       price,
-      instructor: req.user.id,
-      createdBy: req.user.id,
-    });
+    };
+
+    if (req.user.role !== "admin") {
+      courseData.instructor = req.user.id;
+      courseData.createdBy = req.user.id;
+    }
+
+    const course = await Course.create(courseData);
 
     res.status(201).json({
       message: "Course created successfully",

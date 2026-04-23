@@ -18,15 +18,20 @@ router.post("/create", protect, async (req, res) => {
       return res.status(400).json({ message: "Title and description required" });
     }
 
-    const course = await Course.create({
+    const courseData = {
       title,
       description,
       level: level || "College",
       duration: duration || "4 weeks",
       price: price || 0,
-      instructor: req.user._id,
-      createdBy: req.user._id,
-    });
+    };
+
+    if (req.user.role !== "admin") {
+      courseData.instructor = req.user.id;
+      courseData.createdBy = req.user.id;
+    }
+
+    const course = await Course.create(courseData);
 
     res.status(201).json({ message: "Course created successfully", course });
   } catch (error) {
@@ -48,7 +53,11 @@ router.post("/:courseId/upload-video", protect, async (req, res) => {
     }
 
     // Check if user is the instructor
-    if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+    if (
+      course.instructor &&
+      course.instructor.toString() !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({ message: "Not authorized to upload video" });
     }
 
@@ -130,10 +139,10 @@ router.post("/:courseId/upload-image", protect, async (req, res) => {
 /**
  * 📝 GET ALL COURSES (with filtering)
  */
-router.get("/", async (req, res) => {
+router.get("/", protect, adminOnly, async (req, res) => {
   try {
     const { level, instructor } = req.query;
-    let query = { isPublished: true };
+    let query = {};
 
     if (level) query.level = level;
     if (instructor) query.instructor = instructor;
@@ -177,7 +186,11 @@ router.put("/:courseId", protect, async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+    if (
+      course.instructor &&
+      course.instructor.toString() !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({ message: "Not authorized to update course" });
     }
 

@@ -7,8 +7,22 @@ const User = require("../models/User");
  * 👤 GET LOGGED USER PROFILE
  */
 router.get("/me", protect, async (req, res) => {
-  const user = await User.findById(req.user.id).select("-password");
-  res.json(user);
+  try {
+    // Handle env-based admin user
+    if (req.user.id === "admin" && req.user.role === "admin") {
+      return res.json({
+        _id: "admin",
+        name: "Admin",
+        email: process.env.ADMIN_ID,
+        role: "admin",
+      });
+    }
+
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching profile", error: err.message });
+  }
 });
 
 /**
@@ -29,6 +43,11 @@ router.get("/user/:id", async (req, res) => {
  */
 router.put("/update", protect, async (req, res) => {
   try {
+    // Block profile updates for env admin user
+    if (req.user.id === "admin" && req.user.role === "admin") {
+      return res.status(403).json({ message: "Cannot modify env-based admin profile" });
+    }
+
     const { name, email, class: cls, rollNo, department } = req.body;
 
     const user = await User.findById(req.user.id);

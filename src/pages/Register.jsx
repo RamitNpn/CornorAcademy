@@ -19,15 +19,34 @@ function Register() {
     setLoading(true);
     setError("");
 
-    const data = await registerUser(form);
-
-    if (data.message === "User registered") {
-      navigate("/login");
-    } else {
-      setError(data.message || "Something went wrong");
+    // Client-side validation
+    if (!form.name || !form.email || !form.password) {
+      setError("Please fill in all fields");
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const data = await registerUser(form);
+
+      if (data.message === "User registered") {
+        alert("✅ Account created successfully! Redirecting to login...");
+        navigate("/login");
+      } else {
+        setError(data.message || "Something went wrong");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,6 +79,8 @@ function Register() {
             <input
               type="text"
               placeholder="Enter your name"
+              value={form.name}
+              required
               className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
               onChange={(e) =>
                 setForm({ ...form, name: e.target.value })
@@ -73,6 +94,8 @@ function Register() {
             <input
               type="email"
               placeholder="Enter your email"
+              value={form.email}
+              required
               className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
               onChange={(e) =>
                 setForm({ ...form, email: e.target.value })
@@ -85,7 +108,10 @@ function Register() {
             <label className="text-sm text-gray-600">Password</label>
             <input
               type="password"
-              placeholder="Enter password"
+              placeholder="Enter password (min 6 characters)"
+              value={form.password}
+              required
+              minLength="6"
               className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
               onChange={(e) =>
                 setForm({ ...form, password: e.target.value })

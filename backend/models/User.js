@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   level: {
     type: String,
-    default: "Beginner",
+    default: "College",
     enum: ["School", "College", "University", "Professional"]
   },
   class: {

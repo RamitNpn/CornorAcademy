@@ -19,6 +19,16 @@ router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
     const exists = await User.findOne({ email });
     if (exists) {
       return res.status(400).json({ message: "User already exists" });
@@ -30,7 +40,8 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password: hashed,
-      role: "user",
+      role: "student",
+      level: "College",
     });
 
     res.json({
@@ -38,7 +49,8 @@ router.post("/register", async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Registration error:", err);
+    res.status(500).json({ message: "Server error: " + err.message });
   }
 });
 
